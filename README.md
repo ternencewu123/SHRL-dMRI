@@ -1,2 +1,2 @@
 # SHRL-dMRI
-this is project of SHRL-dMRI
+this is a project for SHRL-dMRI
