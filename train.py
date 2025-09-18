@@ -321,6 +321,6 @@ def train(rank, world_size):
     logger.info('Finish!')
 
 if __name__ == '__main__':
-    world_size = int(os.environ['WORLD_SIZE'])  # 训练的总进程数
+    world_size = int(os.environ['WORLD_SIZE'])  # 
     mp.spawn(train, args=(world_size,), nprocs=world_size, join=True)
 
