@@ -89,13 +89,13 @@ if __name__ == '__main__':
     # load pre-trained model weights
     checkpoint = torch.load(pre_trained_model, map_location=DEVICE)['model']
 
-    # 修改key 去除 ‘‘module.’’前缀
+    # update key, and remove `module.` prefix
     new_state_dict = {}
     for k, v in checkpoint.items():
         name = k.replace('module.', '')  # remove `module.`
         new_state_dict[name] = v
 
-    # 将修改后的key加载到网络中
+    # Load the modified key into the network
     INRSSR.load_state_dict(new_state_dict)
 
     d6 = [0, 14, 24, 45, 74, 79]  # in python

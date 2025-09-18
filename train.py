@@ -19,12 +19,12 @@ from torch.utils.data.distributed import DistributedSampler
 # plot
 import matplotlib.pyplot as plt
 
-# 配置环境
+# set environment
 os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
 os.environ['MASTER_ADDR'] = 'localhost'
 os.environ['MASTER_PORT'] = '12345'
 os.environ['WORLD_SIZE'] = '2'
-os.environ['RANK'] = '1'  # 主进程的rank为0
+os.environ['RANK'] = '1'  # rank
 os.environ["WANDB_MODE"] = "disabled"
 
 
@@ -140,7 +140,7 @@ def train(rank, world_size):
         # mode='offline'
     )
 
-    # 初始化分布式环境
+    # initialize ditributed training
     dist.init_process_group(backend='nccl', rank=rank, world_size=world_size)
     torch.cuda.set_device(rank)
 
@@ -288,7 +288,7 @@ def train(rank, world_size):
             }
 
         if rank == 0:
-            # 保存模型
+            # save model
             torch.save(best_model, os.path.join(path, '{}_d30.pkl'.format(encoder_name)))
             logger.info('current best epoch: {}'.format(best_model['epoch'] + 1))
             if ep+1 == 100:
