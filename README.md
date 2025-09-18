@@ -4,12 +4,12 @@ Spherical Harmonics Representation Learning
 for High-Fidelity and Generalizable
 Super-Resolution in Diffusion MRI
 
-<img src="/assets/architecture.png" alt="Description" width="700">
+<img src="/assets/architecture.png" alt="Description" width="600">
 
 ## Main Results
 
 - DWI
-<img src="/assets/DWI.png" alt="Description" width="600">
+<img src="/assets/DWI.png" alt="Description" width="500">
 
 ## Training Phase
 
