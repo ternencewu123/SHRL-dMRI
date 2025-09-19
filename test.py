@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # -----------------------
     parser = argparse.ArgumentParser()
 
-    # about ArSSR model
+    # about SHRL model
     parser.add_argument('-encoder', type=str, default='RDN', dest='encoder_name',
                         help='the type of encoder network, including RDN (default), ResCNN, and SRResnet.')
     parser.add_argument('-depth', type=int, default=8, dest='decoder_depth',
@@ -98,9 +98,9 @@ if __name__ == '__main__':
     # Load the modified key into the network
     INRSSR.load_state_dict(new_state_dict)
 
-    d6 = [0, 14, 24, 45, 74, 79]  # in python
+    d6 = [0, 14, 24, 45, 74, 79]  
     d30 = [7, 9, 10, 15, 19, 26, 27, 28, 29, 32, 33, 34, 35, 43, 50, 54, 55,
-           56, 58, 61, 64, 65, 69, 72, 78, 79, 81, 82, 87, 88]  # in python
+           56, 58, 61, 64, 65, 69, 72, 78, 79, 81, 82, 87, 88]  
 
     # -----------------------
     # SR
@@ -120,7 +120,7 @@ if __name__ == '__main__':
 
         z_slice = np.zeros_like(hr_dwis)  # 145x174x145x90
         for z in range(143):
-            hr_slice = hr_vols[d30, z:z+3, :, :]  # 6×3x145×174 d6
+            hr_slice = hr_vols[d30, z:z+3, :, :]  
 
             ik = utils.fft2c2d(hr_slice)
             czero = torch.zeros_like(ik)
@@ -128,29 +128,29 @@ if __name__ == '__main__':
 
             ckspace, mask = downsample(ik, czero, mask, scale)
 
-            lr_slice = utils.ifft2c2d(ckspace)  # 6×3×145×174
+            lr_slice = utils.ifft2c2d(ckspace)  
 
             with torch.no_grad():
 
                 _, _, H, W = lr_slice.shape
                 # generate coordinate set
-                xy_hr = utils.make_coord(lr_slice.shape[1:], flatten=True)  # [3x145x174, 3]  # 25230
+                xy_hr = utils.make_coord(lr_slice.shape[1:], flatten=True)  
                 # print(xy_hr.shape)
 
                 xy_hr = xy_hr.unsqueeze(0).float().to(DEVICE)
                 # print(xy_hr.shape)
-                xy_hr = xy_hr.repeat(out_dim, 1, 1)  # 6×3x25230×3
+                xy_hr = xy_hr.repeat(out_dim, 1, 1)  
 
-                pre = INRSSR(lr_slice.unsqueeze(0), xy_hr.unsqueeze(0), bvec.unsqueeze(0), mask.unsqueeze(0), d30)  # 1xkx28
+                pre = INRSSR(lr_slice.unsqueeze(0), xy_hr.unsqueeze(0), bvec.unsqueeze(0), mask.unsqueeze(0), d30)  
 
                 # sh_to_sf
-                pre = sh_to_sf_batch(pre, bvec.unsqueeze(0), DEVICE)  # 1xkx90
-                pre = pre.permute(0, 2, 1).reshape(1, 90, H, W)  # 1x90x145x174
+                pre = sh_to_sf_batch(pre, bvec.unsqueeze(0), DEVICE)  
+                pre = pre.permute(0, 2, 1).reshape(1, 90, H, W)  # 
 
                 # dc
-                pre = data_fidelity(lr_slice[:, 1, ...].unsqueeze(0), pre, mask[:, 1, ...].unsqueeze(0), d30)  # d30
+                pre = data_fidelity(lr_slice[:, 1, ...].unsqueeze(0), pre, mask[:, 1, ...].unsqueeze(0), d30)  
 
-                pre = pre.squeeze(0).permute(1, 2, 0).cpu().numpy()  # 145x174x90
+                pre = pre.squeeze(0).permute(1, 2, 0).cpu().numpy()  
                 z_slice[:, :, z+1, :] = pre
 
         print(z_slice.shape)

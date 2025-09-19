@@ -30,7 +30,7 @@ os.environ["WANDB_MODE"] = "disabled"
 
 def train(rank, world_size):
 
-    path = os.path.join('./checkpoint/', time.strftime("%Y%m%d-%H%M%S"))
+    path = os.path.join('./checkpoint', time.strftime("%Y%m%d-%H%M%S"))
     if not os.path.exists(path):
         os.mkdir(path)
     logger = get_logger(os.path.join(path, 'SHRL.log'))
@@ -40,7 +40,7 @@ def train(rank, world_size):
     # -----------------------
     parser = argparse.ArgumentParser()
 
-    # about ArSSR model
+    # about SHRL model
     parser.add_argument('-encoder_name', type=str, default='RDN', dest='encoder_name',
                         help='the type of encoder network, including RDN .')
     parser.add_argument('-decoder_depth', type=int, default=8, dest='decoder_depth',
@@ -54,13 +54,13 @@ def train(rank, world_size):
 
     # about training and validation data
     parser.add_argument('-hr_data_train', type=str,
-                        default='/media/5cbcc386-8cbf-4e32-b1ae-a704b2be3ffb/HCP/train_p3d',
+                        default='/media/sswang/5cbcc386-8cbf-4e32-b1ae-a704b2be3ffb/HCP/train_p3d',
                         dest='hr_data_train', help='the file path of HR patches for training')
     parser.add_argument('-hr_data_val', type=str,
-                        default='/media/5cbcc386-8cbf-4e32-b1ae-a704b2be3ffb/HCP/val_p3d',
+                        default='/media/sswang/5cbcc386-8cbf-4e32-b1ae-a704b2be3ffb/HCP/val_p3d',
                         dest='hr_data_val', help='the file path of HR patches for validation')
     parser.add_argument('-bvecs', type=str,
-                        default='/media/2033127b-b5be-41bb-a893-3022d6f8b72a/data/hcp'
+                        default='/media/sswang/2033127b-b5be-41bb-a893-3022d6f8b72a/data/hcp'
                                 '/DTI/3T/145x174x145/50_30/single-shell/b1000/bvecs',
                         dest='bvecs', help='the file path of bvecs for training')
 
@@ -70,7 +70,7 @@ def train(rank, world_size):
     parser.add_argument('-epoch', type=int, default=200, dest='epoch',
                         help='the total number of epochs for training')
     parser.add_argument('-bs', type=int, default=5, dest='batch_size',
-                        help='the number of LR-HR patch pairs (i.e., N in Equ. 3)')
+                        help='the number of LR-HR patch pairs')
     parser.add_argument('-seed', type=int, default=24, dest='seed')
 
     args = parser.parse_args()
@@ -178,14 +178,14 @@ def train(rank, world_size):
     # break out and load pre-trained model
     # -----------------------
     start_epoch = 0
-    checkpoint_file = './checkpoint/20240916-215221/RDN_d6.pkl'
+    checkpoint_file = './checkpoint/20240916-215221/RDN_d30.pkl'
     if os.path.exists(checkpoint_file):
         checkpoint = torch.load(checkpoint_file, map_location={'cuda:0': f'cuda:{rank}'})
         INRSSR.load_state_dict(checkpoint['model'])
         start_epoch = checkpoint['epoch']
         optimizer.load_state_dict(checkpoint['optimizer'])
 
-        logger.info('load model from {}'.format('./checkpoint/20240916-215221/RDN_d6.pkl'))
+        logger.info('load model from {}'.format('./checkpoint/20240916-215221/RDN_d30.pkl'))
 
     # -----------------------
     # training & validation
@@ -211,11 +211,11 @@ def train(rank, world_size):
             N, C, H, W = img_hr.shape
 
             optimizer.zero_grad()
-            img_pre = INRSSR(img_lr, xy_hr, bvec, mask, index[0])  # Nxkx28
+            img_pre = INRSSR(img_lr, xy_hr, bvec, mask, index[0])  
 
             # sh_to_sf
-            pre = sh_to_sf_batch(img_pre, bvec, rank)  # Nxkx90
-            pre = pre.permute(0, 2, 1).reshape(N, C, H, W)  # Nx90x145x174
+            pre = sh_to_sf_batch(img_pre, bvec, rank)  
+            pre = pre.permute(0, 2, 1).reshape(N, C, H, W)  
 
             # dc
             pre = data_fidelity(img_lr[:, :, 1, ...], pre, mask[:, :, 1, ...], index[0])
@@ -258,11 +258,11 @@ def train(rank, world_size):
                 bvec, mask = bvec.to(rank), mask.to(rank)
                 N, C, H, W = img_hr.shape
 
-                img_pre = INRSSR(img_lr, xy_hr, bvec, mask, index[0])  # N, k, 28
+                img_pre = INRSSR(img_lr, xy_hr, bvec, mask, index[0])  
 
                 # sh_to_sf
-                pre = sh_to_sf_batch(img_pre, bvec, rank)  # Nxkx90
-                pre = pre.permute(0, 2, 1).reshape(N, C, H, W)  # Nx90x145x174
+                pre = sh_to_sf_batch(img_pre, bvec, rank)  
+                pre = pre.permute(0, 2, 1).reshape(N, C, H, W)  
                 # print(pre.shape)
                 # dc
                 pre = data_fidelity(img_lr[:, :, 1, ...], pre, mask[:, :, 1, ...], index[0])

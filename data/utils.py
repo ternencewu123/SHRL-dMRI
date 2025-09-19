@@ -80,7 +80,7 @@ def batch_psnr_ssim(recon, ref):
 
 
 def get_logger(filepath):
-    logger = logging.getLogger('INRSSR')
+    logger = logging.getLogger('SHRL')
     log_format = '%(asctime)s | %(message)s'
     formatter = logging.Formatter(log_format, datefmt='%Y-%m-%d %H:%M:%S')
     file_handler = logging.FileHandler(filepath)

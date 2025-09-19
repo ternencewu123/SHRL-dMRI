@@ -44,9 +44,9 @@ class HCPDataFidelity(data.Dataset):
         return len(self.file_path)
 
     def __getitem__(self, idx):
-        d6 = [0, 14, 24, 45, 74, 79]  # in python  # in python
+        d6 = [0, 14, 24, 45, 74, 79]  
         d30 = [7, 9, 10, 15, 19, 26, 27, 28, 29, 32, 33, 34, 35, 43, 50, 54, 55,
-               56, 58, 61, 64, 65, 69, 72, 78, 79, 81, 82, 87, 88]  # in python
+               56, 58, 61, 64, 65, 69, 72, 78, 79, 81, 82, 87, 88]  
 
         dwi_path, bvec_path = self.file_path[idx]
 
@@ -57,7 +57,7 @@ class HCPDataFidelity(data.Dataset):
         bvecs = torch.from_numpy(bvecs).float()  # [90, 3]
 
         if self.g == 6:
-            lar_dwi = hr_dwi[d6, ...]  # [6, 3, 145, 174]
+            lar_dwi = hr_dwi[d6, ...]  
 
             ik = fft2c2d(lar_dwi)
             czero = torch.zeros_like(ik)
@@ -71,11 +71,11 @@ class HCPDataFidelity(data.Dataset):
 
             # generate coordinate set
             xy_hr = make_coord(lar_dwi.shape[1:], flatten=True)
-            xy_hr = xy_hr.unsqueeze(0).repeat(self.out, 1, 1)  # [6, 75690, 3]
+            xy_hr = xy_hr.unsqueeze(0).repeat(self.out, 1, 1)  
 
             return clr_dwi, xy_hr, hr_dwi[:, 1, ...], bvecs, mask, np.array(d6)
         elif self.g == 30:
-            lar_dwi = hr_dwi[d30, ...]  # [30, 3, 145, 174]
+            lar_dwi = hr_dwi[d30, ...]  
 
             ik = fft2c2d(lar_dwi)
             czero = torch.zeros_like(ik)
@@ -89,6 +89,6 @@ class HCPDataFidelity(data.Dataset):
 
             # generate coordinate set
             xy_hr = make_coord(lar_dwi.shape[1:], flatten=True)
-            xy_hr = xy_hr.unsqueeze(0).repeat(self.out, 1, 1)  # [6, 75690, 3]
+            xy_hr = xy_hr.unsqueeze(0).repeat(self.out, 1, 1)  
 
             return clr_dwi, xy_hr, hr_dwi[:, 1, ...], bvecs, mask, np.array(d30)

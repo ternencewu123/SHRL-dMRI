@@ -30,7 +30,6 @@ def sh_to_sf_batch(sh, bvec, device, shs=6):
 
 def data_fidelity(img_lr, pre, mask, index):
     # print(img_lr.shape, pre.shape, mask.shape, len(index))
-    # print(direc)
     pre[:, index, ...] = torch.abs(ifft2c2d(fft2c2d(img_lr) * mask +
                                                fft2c2d(pre[:, index, ...]) * (1 - mask)))
     return pre
@@ -64,28 +63,28 @@ class DCSARL(nn.Module):
 
             feature_vector = F.grid_sample(feature_map, xy_hr[:, 0, ...].flip(-1).unsqueeze(1).unsqueeze(1),
                                            mode='bilinear', align_corners=False)[:, :, 0, 0, :]
-            # print(feature_vector.shape)  # N, 30, K
+            # print(feature_vector.shape)  
 
-            feature_vector_and_xy_hr = torch.cat([xy_hr, feature_vector.unsqueeze(-1)], dim=-1)  # N, 6, k, 4
+            feature_vector_and_xy_hr = torch.cat([xy_hr, feature_vector.unsqueeze(-1)], dim=-1)  
 
             if i < self.layer - 1:
-                feature_vector_and_xy_hr = feature_vector_and_xy_hr.permute(0, 2, 1, 3).contiguous()  # N, S*H*W, C, 4
+                feature_vector_and_xy_hr = feature_vector_and_xy_hr.permute(0, 2, 1, 3).contiguous()  
                 _, K = feature_vector_and_xy_hr.shape[:2]
-                intensity_sh = self.decoder(feature_vector_and_xy_hr.reshape(N * K, -1)).reshape(N, K, -1)  # Nxkx28
+                intensity_sh = self.decoder(feature_vector_and_xy_hr.reshape(N * K, -1)).reshape(N, K, -1)  
 
                 # sh_to_sf
-                intensity_pre = sh_to_sf_batch(intensity_sh, bvec, self.device)  # Nx(k)x90
-                intensity_pre = intensity_pre.permute(0, 2, 1).reshape(N, bvec.shape[1], S, H, W)  # Nx90x3x145x174
+                intensity_pre = sh_to_sf_batch(intensity_sh, bvec, self.device)  
+                intensity_pre = intensity_pre.permute(0, 2, 1).reshape(N, bvec.shape[1], S, H, W)  
 
                 # data fidelity
-                pre = data_fidelity(img_lr, intensity_pre, mask, index)  # Nx90x3x145x174
+                pre = data_fidelity(img_lr, intensity_pre, mask, index)  
 
-                temp = pre[:, index, ...]  # Nx30x3x145x174
+                temp = pre[:, index, ...]  
             else:
                 feature_vector_and_xy_hr = feature_vector_and_xy_hr.reshape(N, C, S, H * W, 4)
-                feature_vector_and_xy_hr = feature_vector_and_xy_hr.permute(0, 3, 1, 2, 4).contiguous()  # N, H*W, C, S, 4
+                feature_vector_and_xy_hr = feature_vector_and_xy_hr.permute(0, 3, 1, 2, 4).contiguous()  
                 _, K = feature_vector_and_xy_hr.shape[:2]
-                intensity_sh = self.decoder2(feature_vector_and_xy_hr.reshape(N * K, -1)).reshape(N, K, -1)  # Nxkx28
+                intensity_sh = self.decoder2(feature_vector_and_xy_hr.reshape(N * K, -1)).reshape(N, K, -1)  
                 x_final = intensity_sh
 
         return x_final
