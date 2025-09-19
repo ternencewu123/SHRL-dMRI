@@ -30,7 +30,7 @@ os.environ["WANDB_MODE"] = "disabled"
 
 def train(rank, world_size):
 
-    path = os.path.join('./checkpoint', time.strftime("%Y%m%d-%H%M%S"))
+    path = os.path.join('./checkpoint/', time.strftime("%Y%m%d-%H%M%S"))
     if not os.path.exists(path):
         os.mkdir(path)
     logger = get_logger(os.path.join(path, 'SHRL.log'))
